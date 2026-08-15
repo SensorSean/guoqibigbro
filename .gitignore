@@ -1,0 +1,29 @@
+# ===== 构建产物 =====
+dist/
+build/
+__pycache__/
+core/__pycache__/
+*.spec
+spec/*.spec
+
+# ===== 日志 =====
+log/
+*.log
+
+# ===== 真实业务数据 / 复现脚本（含真实项目信息，禁止入库）=====
+testdata/
+_repro_real.py
+_repro_real.log
+
+# ===== 对话 / 交付产物（含真实项目名，非工具源码）=====
+deliverables/
+
+# ===== 残留空文件 =====
+nul
+
+# ===== 打包 exe =====
+*.exe
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db
