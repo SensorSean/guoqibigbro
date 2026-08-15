@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国企大表哥</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="大表哥Logo.ico">
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<div class="topbar">
+  <div class="logo" onclick="easterEgg()">
+    <img src="大表哥Logo-头大.png" class="logo-img" id="app-logo" alt="国企大表哥" title="国企大表哥">
+    国企大表哥
+    <span class="subtitle">guoqibigbro · 填表表哥</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage(0)">数据源</button>
+    <button class="nav-tab" onclick="switchPage(1)">字段映射</button>
+    <button class="nav-tab" onclick="switchPage(2)">关于</button>
+  </div>
+</div>
+
+<!-- ===== 页面指示器 ===== -->
+<div class="page-indicator">
+  <div class="page-dot active" onclick="switchPage(0)"></div>
+  <div class="page-dot" onclick="switchPage(1)"></div>
+  <div class="page-dot" onclick="switchPage(2)"></div>
+</div>
+
+<!-- ===== 彩蛋 ===== -->
+<div class="easter-egg" id="easter-egg"></div>
+
+<!-- ===== 页面0: 数据源 ===== -->
+<div class="page active" id="page-0">
+  <div class="home-center">
+    <div class="app-mascot"><img src="大表哥Logo.ico" class="app-mascot-img" alt="国企大表哥" onclick="easterEgg()"></div>
+    <div class="app-title">国企<span>大表哥</span></div>
+    <div class="app-subtitle">guoqi bigbro · 让填表不再头疼</div>
+
+    <div class="upload-zone" id="src-zone" onclick="selectSourceFiles()">
+      <div class="icon">📂</div>
+      <div class="label">选择数据源文件</div>
+      <div class="hint">支持 .xlsx / .xls / .csv · 可多选 · 支持多Sheet</div>
+    </div>
+    <div class="file-tags" id="src-tags"></div>
+
+    <div class="divider-text">填入目标</div>
+
+    <div class="upload-zone" id="tgt-zone" onclick="selectTargetFile()">
+      <div class="icon">📋</div>
+      <div class="label">选择目标模板</div>
+      <div class="hint">点击选择空白表格模板</div>
+    </div>
+
+    <button class="pill pill-primary pill-lg" id="btn-match" onclick="goMatch()" style="width:100%;justify-content:center" disabled>
+      ✨ 开始智能匹配
+    </button>
+  </div>
+</div>
+
+<!-- ===== 页面1: 字段映射（含执行） ===== -->
+<div class="page" id="page-1">
+  <!-- 顶部固定操作栏：执行按钮常驻 -->
+  <div class="page1-sticky" id="page1-sticky">
+    <div class="page1-sticky-title">
+      <span class="section-title">字段映射</span>
+      
+    </div>
+    <div class="page1-sticky-actions">
+      <button class="pill pill-outline pill-sm" id="btn-collapse-all" onclick="toggleAllSections()">▾ 全部展开</button>
+      <button class="pill pill-outline pill-sm" id="btn-top-match" onclick="doAutoMatch()">🤖 智能匹配</button>
+      <button class="pill pill-outline pill-sm" id="btn-dict" onclick="openDictModal()">📖 同义词词典</button>
+      <button class="pill pill-primary pill-sm" id="btn-top-run" onclick="confirmAndExecute()">🚀 开始执行</button>
+    </div>
+  </div>
+
+  <div class="map-scroll">
+    <!-- 映射规则说明：展示完整源→目标路径 -->
+    <div class="rule-block" id="rule-block">
+      <div class="rule-title">📖 映射规则说明</div>
+      <div class="rule-flow">
+        <span class="rule-node">源数据表</span>
+        <span class="rule-arrow">→</span>
+        <span class="rule-node">源字段</span>
+        <span class="rule-arrow">⇒</span>
+        <span class="rule-node rule-target">目标字段</span>
+      </div>
+      <div class="rule-hint" id="rule-hint">加载数据后，将在此展示具体映射路径。</div>
+      <div class="rule-example" id="rule-example" style="display:none"></div>
+    </div>
+
+    <!-- SECTION A: 字段映射（列级） -->
+    <section class="map-section" id="sec-field">
+      <header class="section-head" onclick="toggleSection('sec-field')">
+        <span class="section-title"><span class="section-toggle">▾</span> 表头关键字映射（列级）</span>
+        <div class="section-stat" id="sec-field-stats"></div>
+      </header>
+      <div class="section-body" id="sec-field-body">
+        <div class="header-zone-per-source" id="header-zone-per-source"></div>
+        <div class="mapping-grid" id="mapping-grid"></div>
+      </div>
+    </section>
+
+    <!-- SECTION B: 项目/合同行映射（行级） -->
+    <section class="map-section" id="sec-row">
+      <header class="section-head" onclick="toggleSection('sec-row')">
+        <span class="section-title"><span class="section-toggle">▾</span> 项目 / 合同行映射（行级）</span>
+        <div class="section-stat" id="sec-row-stats"></div>
+      </header>
+      <div class="section-body" id="sec-row-body">
+        <div class="rowkey-bar">
+          <label>列标识键：</label>
+          <select class="select-sm rowkey-select" id="rowkey-src"></select>
+          <span>对应</span>
+          <select class="select-sm rowkey-select" id="rowkey-tgt"></select>
+        </div>
+        <div class="rowmap-list" id="rowmap-list"></div>
+      </div>
+    </section>
+
+    <!-- SECTION C: 输出与执行 -->
+    <section class="map-section" id="sec-exec">
+      <header class="section-head" onclick="toggleSection('sec-exec')">
+        <span class="section-title"><span class="section-toggle">▾</span> 输出与执行</span>
+      </header>
+      <div class="section-body" id="sec-exec-body">
+        <div class="exec-settings">
+          <label class="exec-label">保存路径</label>
+          <div class="path-row">
+            <input class="text-input" id="output-path" placeholder="默认：模板同目录/模板名_已填充_时间戳.xlsx">
+            <button class="pill pill-outline pill-sm" id="btn-browse" onclick="selectOutputPath()">📂 浏览</button>
+          </div>
+          <label class="exec-label">超时设置：默认 10 分钟</label>
+        </div>
+        <button class="pill pill-primary pill-lg run-btn" id="btn-run" onclick="confirmAndExecute()">🚀 开始执行</button>
+
+        <div class="exec-panel" id="exec-panel" style="display:none">
+          <div class="exec-panel-head">
+            <span class="section-title">🚀 执行状态</span>
+            <button class="pill pill-ghost pill-sm" id="btn-cancel" style="display:none" onclick="cancelExecute()">取消</button>
+            <button class="pill pill-outline pill-sm" id="btn-reset" style="display:none" onclick="resetAll()">🔄 新建任务</button>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <span class="progress-pct" id="progress-pct">0%</span>
+            <span class="progress-elapsed" id="progress-elapsed">已用 0s</span>
+          </div>
+          <div class="progress-tip" id="progress-tip"></div>
+          <div class="exec-banner" id="exec-banner" style="display:none"></div>
+          <div class="log-list" id="exec-log"></div>
+          <button class="pill pill-success pill-lg" id="btn-open-result" style="display:none;justify-content:center;min-width:200px;margin-top:16px;" onclick="openResultFolder()">📂 打开结果文件</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ===== 页面2: 关于 ===== -->
+<div class="page" id="page-2" style="padding:32px;overflow-y:auto;height:calc(100vh - 110px)">
+  <div style="text-align:center;margin-bottom:24px">
+    <img src="大表哥Logo.ico" style="height:56px;margin-bottom:12px" alt="国企大表哥">
+    <div style="font-size:26px;font-weight:800">国企大表哥</div>
+    <div style="display:inline-block;background:var(--primary);color:#fff;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-top:8px">版本 V1.3.1</div>
+    <div style="color:var(--text-secondary);font-size:13px;margin-top:10px">guoqibigbro · 填表表哥</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px">
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--border);text-align:center">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">开发人员</div>
+      <div style="font-size:18px;font-weight:700">LuoLei</div>
+    </div>
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--border);text-align:center">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">当前版本</div>
+      <div style="font-size:18px;font-weight:700">V1.3.1</div>
+    </div>
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--border);text-align:center">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">技术栈</div>
+      <div style="font-size:13px;font-weight:600">Python · pywebview · openpyxl</div>
+    </div>
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--border);text-align:center">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">最新发布</div>
+      <div style="font-size:14px;font-weight:600">2026-08-06</div>
+    </div>
+  </div>
+
+  <div style="background:var(--card-bg);border-radius:12px;padding:18px;border:1px solid var(--border);margin-bottom:14px">
+    <div style="font-weight:700;margin-bottom:10px">🎯 核心功能</div>
+    <ul style="margin:0;padding-left:20px;color:var(--text-secondary);font-size:13px;line-height:1.8">
+      <li>多源 Excel 智能归集（列名匹配 + 行标识匹配）</li>
+      <li>同义词识别（中文 / 英文 / 简写）</li>
+      <li>行级匹配支持项目名称 / 合同编号，可手动纠偏</li>
+      <li>执行超时保护 + 自定义输出路径</li>
+      <li>自动保留目标模板格式（表头样式、列宽、合并单元格）</li>
+    </ul>
+  </div>
+
+  <div style="margin-bottom:14px">
+    <div style="font-weight:700;margin-bottom:14px;font-size:15px">📖 使用说明</div>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);line-height:1.8">
+      <b>使用要求</b>：操作系统 Windows 7 SP1 及以上（含 8 / 8.1 / 10 / 11，64 位推荐）
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:16px">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:var(--primary);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">1</div>
+          <div style="font-weight:700;font-size:14px">加载数据源</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">在「数据源」页选择多个 .xlsx / .xls / .csv 文件，跨文件、跨 Sheet 自动识别字段名。</div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:var(--primary);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">2</div>
+          <div style="font-weight:700;font-size:14px">选择目标模板</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">选择要填入的空白表格，自动读取表头作为目标字段；.xls 旧格式会自动转存为 .xlsx。</div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:var(--primary);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">3</div>
+          <div style="font-weight:700;font-size:14px">智能匹配字段与行</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">点「智能匹配」按相似度+同义词自动配对字段；「智能匹配行」按项目名/合同编号自动对齐行，低置信度行可手动改配。</div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:var(--primary);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">4</div>
+          <div style="font-weight:700;font-size:14px">核对并执行</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">在字段映射页核对「源→目标」映射与行配对，设置保存路径后点「开始执行」；进度与日志同页展示，完成后可打开结果文件。</div>
+      </div>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-weight:700;margin-bottom:10px">💡 小贴士</div>
+      <ul style="margin:0;padding-left:20px;color:var(--text-secondary);font-size:13px;line-height:1.8">
+        <li>后选的数据源优先级更高（同名字段冲突时以最新源为准）</li>
+        <li>同义词字典已内置「姓名/名字」「电话/手机」等常见别名</li>
+        <li>行级匹配支持「项目名称」与「合同编号」两种行标识键，可切换</li>
+        <li>执行过程实时显示已用时长，超时会自动中止并提示</li>
+        <li>结果文件名格式：<code>原模板名_已填充_YYYYMMDD_HHMMSS.xlsx</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background:var(--card-bg);border-radius:12px;padding:18px;border:1px solid var(--border);margin-bottom:14px">
+    <div style="font-weight:700;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:8px" onclick="var b=document.getElementById('changelog-body');var t=document.getElementById('changelog-toggle');if(b.style.display==='none'){b.style.display='block';t.textContent='▾'}else{b.style.display='none';t.textContent='▸'}">
+      📝 更新日志 <span id="changelog-toggle" style="font-size:12px;color:var(--text-secondary)">▸</span>
+    </div>
+      <div id="changelog-body" style="display:none;font-size:13px;color:var(--text-secondary);line-height:1.8">
+      <div style="margin-bottom:8px"><b>V1.3.1</b> <span style="font-size:11px;color:var(--primary-light)">2026-08-06</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>移除校核前端 UI，改为开发人员使用日志（UsageLog）</li>
+        <li>修复字段匹配错误（语义分类 + 跨类惩罚 + 不匹配规则 exclusions）</li>
+        <li>修复 3 行合并表头解析缺陷（uniq_counts 算法）</li>
+        <li>修复 6 字段匹配后不填充（_strip_parens + 列名映射修复）</li>
+        <li>补充同义词词典与排除规则配置</li>
+        <li>优化顶栏为 4 按钮（全部展开/智能匹配/同义词词典/开始执行）</li>
+      </ul>
+      <div style="margin-bottom:8px"><b>V1.3.0</b> <span style="font-size:11px;color:var(--primary-light)">2026-07-23</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>字段「建议」与项目「建议」清单每条增加「✓ 确认」按钮，点击即移入已匹配</li>
+        <li>项目建议清单按匹配度从高到低排序</li>
+        <li>修复筛选徽章需点击两次才切换的问题（单点击即可）</li>
+        <li>「表头关键字映射」区默认折叠，消除空统计行换行</li>
+      </ul>
+      <div style="margin-bottom:8px"><b>V1.2.9</b> <span style="font-size:11px;color:var(--primary-light)">2026-07-23</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>修复「同一源值被复制到多行」：目标模板若含重复行，本字段内已用过的源行不再重复取数</li>
+        <li>优化数据源页表头选择下拉框：重绘样式（圆角/悬停色/聚焦光环/自定义箭头），匹配整体 UI 风格</li>
+      </ul>
+      <div style="margin-bottom:8px"><b>V1.2.8</b> <span style="font-size:11px;color:var(--primary-light)">2026-07-22</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>修复跨数据源列污染：预算金额等字段只取「匹配规则所属源」，不再误填其他源的近似列（如将概算/总投资误当预算），杜绝 100 源填出 244 行的异常</li>
+        <li>项目/合同行匹配算法重构：新增通用词剥离与道路端点识别，避免「某旅游基础设施项目」误配「某森林公园保护性开发项目」；「某道路（A-B 段）」可正确匹配「某道路（B-A 段）」，不再误配单段「某道路A」「某道路B」</li>
+        <li>「智能匹配」按钮上移至字段映射页顶部操作栏（全部展开与开始执行之间），移除执行区内重复按钮</li>
+        <li>项目/合同行映射区默认折叠，降低首屏信息密度</li>
+        <li>移除「使用说明」独立页签，使用方法（4 步 + 小贴士）整块移入「关于」页底部</li>
+      </ul>
+      <div style="margin-bottom:8px"><b>V1.2.7</b> <span style="font-size:11px;color:var(--primary-light)">2026-07-15</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>折叠分区标题字号统一，视觉对齐</li>
+        <li>表头关键字段映射区顶部改为「每数据源表头区域」：为每个数据源单独指定源表头行/目标表头行，支持 2~3 行表头及合并单元格</li>
+        <li>项目/合同行映射区删除手动匹配表头/项目按钮与提示，列标识键下拉框缩短为一行</li>
+      </ul>
+      <div style="margin-bottom:8px"><b>V1.2.6</b> <span style="font-size:11px;color:var(--primary-light)">2026-07-07</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>数据源多选改为累加模式：新选文件追加到已有列表，字段同步累计</li>
+        <li>表头关键字段映射区顶部新增「每数据源行标识键」：为每个数据源单独指定源列/目标列，铺平一行</li>
+        <li>所有搜索（字段选择器、行改配）支持模糊搜索：分词后所有 token 子串命中</li>
+      </ul>
+      <div style="margin-bottom:8px"><b>V1.2.5</b> <span style="font-size:11px;color:var(--primary-light)">2026-06-29</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>项目行匹配算法全面重构：新增主名优先匹配（括号前/连接词前）、公里桩与范围连接词去除、更细粒度基建项目分类</li>
+        <li>字段映射工具栏清空，4 个按钮（智能匹配/手动添加/手动匹配表头/手动匹配项目）归位重构</li>
+        <li>「智能匹配」移至「开始执行」前面；「手动匹配表头/项目」移至行键条</li>
+        <li>术语修正：「行标识键」→「列标识键」（明确是列匹配）</li>
+        <li>数据源页面多源文件全部展开显示，每个标签增加字段数角标</li>
+      </ul>
+      <div style="margin-bottom:8px"><b>V1.2.4</b> <span style="font-size:11px;color:var(--primary-light)">2026-06-21</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>字段映射卡左上角标签改为工程建设阶段（立项/可研/设计…），从源字段路径顶层派生</li>
+        <li>字段匹配方向规范化：目标关键字段在左，数据源字段在右，箭头「源→目标」</li>
+        <li>项目匹配修正：项目名带括号子路段（如「某道路（含子路段）」）归一化为主项目名，子路段不再误匹配</li>
+        <li>新增「手动匹配表头」/「手动匹配项目」两个按钮，支持逐文件指定表头行号与项目列名</li>
+        <li>SECTION A 改名「表头关键字映射（列级）」；删除 SECTION B「智能匹配行」按钮</li>
+        <li>关于页精简使用要求（仅保留操作系统），与核心功能交换位置</li>
+      </ul>
+      <div style="margin-top:10px"><b>V1.2.2</b> <span style="font-size:11px;color:var(--primary-light)">2026-06-13</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>字段映射页增加分类筛选：点击「已匹配/建议/未匹配」徽章可快速过滤</li>
+        <li>手动添加映射后给出明确分步反馈（提示 + 弹窗选择 + 完成 toast）</li>
+        <li>移除首次智能匹配弹窗，结果直接 inline 展示，并新增映射规则说明区</li>
+        <li>规则说明区展示「源表/Sheet/字段 ⇒ 目标字段」完整路径，嵌套路径自动压平</li>
+        <li>行匹配增加语义域约束：项目/工程/合同/公司 不同域之间不再误配</li>
+        <li>智能匹配后字段映射区与行映射区默认折叠，执行按钮固定在页面顶部</li>
+      </ul>
+      <div style="margin-top:10px"><b>V1.2</b> <span style="font-size:11px;color:var(--primary-light)">2026-06-05</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>执行超时保护（后端看门狗 + 前端实时计时），不再无限期卡死</li>
+        <li>输出路径可自定义（默认模板同目录 + 时间戳），含浏览选择</li>
+        <li>移除独立预览页，改为字段映射页内联核对 + 执行结果同页展示</li>
+        <li>新增行级映射区：按项目名/合同编号自动配对，低置信行可手动改配/解绑</li>
+        <li>字段映射改为单行「源 → 匹配 → 目标」清晰呈现，绿色=自动/手动匹配</li>
+      </ul>
+      <div style="margin-top:10px"><b>V1.1</b> <span style="font-size:11px;color:var(--primary-light)">2026-05-28</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>大幅扩充建筑/工程建设行业同义词词库</li>
+        <li>系统要求明确为 Windows 7 SP1 及以上</li>
+      </ul>
+      <div style="margin-top:10px"><b>V1.0</b> <span style="font-size:11px;color:var(--primary-light)">2026-05-20</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>首次发布：多源表格智能归集、字段映射、自动填表</li>
+      </ul>
+    </div>
+  </div>
+  <div style="text-align:center;color:var(--text-secondary);font-size:12px;margin-top:20px">
+    © 2026 国企大表哥 · 让填表不再头疼
+  </div>
+</div>
+
+<!-- ===== 手动字段选择弹窗 ===== -->
+<div class="modal-overlay" id="field-picker-overlay" onclick="closeFieldPicker()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>🔍 为「<span id="picker-tgt-name" style="color:var(--primary)"></span>」选择数据源字段</h3>
+    <div style="font-size:12px;color:#999;margin-bottom:12px" id="picker-current"></div>
+    <input class="search-box" placeholder="🔍 搜索数据源字段..." id="picker-search" style="width:100%;padding:8px 12px;font-size:13px;">
+    <div id="picker-field-list" style="max-height:400px;overflow-y:auto;margin-top:12px"></div>
+    <div class="modal-actions">
+      <button class="pill pill-ghost" onclick="closeFieldPicker()">取消</button>
+      <button class="pill pill-primary" onclick="confirmFieldPick()">✓ 确认选择</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 智能匹配弹窗（保留兼容）===== -->
+<div class="modal-overlay" id="auto-match-modal" onclick="closeAutoMatch()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>🤖 智能匹配结果</h3>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px" id="match-summary"></div>
+    <div id="match-result-list"></div>
+    <div style="font-size:11px;color:var(--text-secondary);text-align:center;margin-bottom:12px">
+      💡 提示：点击任意行可手动选择数据源字段
+    </div>
+    <div class="modal-actions">
+      <button class="pill pill-ghost" onclick="closeAutoMatch()">手动调整</button>
+      <button class="pill pill-primary" onclick="acceptMatch()">✓ 接受匹配</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 行级手动改配弹窗 ===== -->
+<div class="modal-overlay" id="row-picker-overlay" onclick="closeRowPicker()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>🔗 为「<span id="row-picker-tgt" style="color:var(--primary)"></span>」选择对应源</h3>
+    <div style="font-size:12px;color:#999;margin-bottom:12px">选择该目标行应匹配的源项目 / 合同</div>
+    <input class="search-box" placeholder="🔍 搜索源项目..." id="row-picker-search" style="width:100%;padding:8px 12px;font-size:13px;">
+    <div id="row-picker-list" style="max-height:400px;overflow-y:auto;margin-top:12px"></div>
+    <div class="modal-actions">
+      <button class="pill pill-ghost" onclick="closeRowPicker()">取消</button>
+      <button class="pill pill-primary" onclick="confirmRowPick()">✓ 确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 5分钟忙碌提示弹窗 ===== -->
+<div class="modal-overlay" id="busy-tip-overlay" onclick="closeBusyTip()">
+  <div class="modal busy-tip-modal" onclick="event.stopPropagation()">
+    <img src="大表哥Logo-填表中.png" class="busy-tip-img" alt="填表中">
+    <div class="busy-tip-msg">老兄，正在填表嘞，忙得很~</div>
+  </div>
+</div>
+
+<!-- ===== 同义词词典管理弹窗 ===== -->
+<div class="modal-overlay" id="dict-overlay" onclick="closeDictModal()">
+  <div class="modal modal-large" onclick="event.stopPropagation()">
+    <h3>📖 同义词词典（全局·叠加在内置词典之上）</h3>
+    <div class="dict-toolbar">
+      <button class="pill pill-outline pill-sm" onclick="addDictGroup()">＋ 新增标准词</button>
+      <button class="pill pill-outline pill-sm" onclick="exportDict()">📤 导出</button>
+      <button class="pill pill-outline pill-sm" onclick="importDict()">📥 导入</button>
+      <button class="pill pill-outline pill-sm" onclick="reloadDict()">🔄 重载</button>
+      <span class="dict-stat" id="dict-stat">共 0 组 · 覆盖 0 术语</span>
+    </div>
+    <div id="dict-list" class="dict-list"></div>
+    <div class="modal-actions">
+      <button class="pill pill-ghost" onclick="closeDictModal()">取消</button>
+      <button class="pill pill-primary" onclick="saveDict()">💾 保存</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="dict-import-input" accept=".json,.JSON" style="display:none">
+
+<!-- ===== Toast ===== -->
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
