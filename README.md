@@ -24,10 +24,13 @@
 ## 🚀 快速开始
 
 ### 方式一：直接运行（推荐普通用户）
-从 [Release](https://github.com/your-name/your-repo/releases) 下载 `国企大表哥_V1.3.1.exe`，
-放到任意目录双击运行即可，无需安装 Python。
+从 [Releases](https://github.com/SensorSean/guoqibigbro/releases) 页面下载最新的
+`国企大表哥_Vx.y.z.exe`，放到任意目录双击运行即可，无需安装 Python。
 
 > ⚠️ 本软件 exe **未签名**，首次双击可能被 Windows SmartScreen 拦截，点击「仍要运行」即可。
+>
+> 📌 当前 Release 中的 exe 仍为 **V1.3.1**；V1.3.3 本轮为**源码更新**，
+> 打包后的 exe 将在后续版本同步发布。急需二进制包请用下方方式三自行构建。
 
 ### 方式二：从源码运行
 ```bash
@@ -39,8 +42,18 @@ python main.py
 ```bash
 pip install -r requirements_build.txt
 python spec/build_exe_v4.py
-# 产物：dist/国企大表哥_V1.3.1.exe
+# 产物：dist/国企大表哥_V1.3.3.exe
 ```
+
+### 运行测试
+```bash
+pip install pytest
+python -m pytest tests -q
+```
+
+期望：**40 passed**。
+（本仓库未包含 `dist/`，其中 1 项校验 `dist/同义词词典.json` 与源词典一致性的用例会自动跳过，
+因此在本仓库运行为 **39 passed, 1 skipped**，属正常。）
 
 ## 📖 使用说明
 完整图文手册见 [使用手册.md](使用手册.md)。
@@ -58,8 +71,10 @@ python spec/build_exe_v4.py
 │   └── filler.py          # 填充 / 格式写回
 ├── ui/                    # 前端（HTML/CSS/JS）
 ├── spec/                  # 构建脚本与 WebView2 安装包
+├── tests/                 # 回归测试（pytest，40 项）
 ├── 同义词词典.json          # 同义词 / 互斥规则（可自定义扩充）
 ├── 使用手册.md             # 图文使用手册
+├── CHANGELOG.md           # 版本更新记录
 └── examples/              # 合成示例数据（无真实业务数据）
 ```
 
@@ -67,10 +82,41 @@ python spec/build_exe_v4.py
 `examples/` 下提供**完全虚构**的演示数据源与目标模板，可用于验证工具而不必准备真实数据。
 （演示数据均为「示范家园」「示例路」等虚构内容，不含任何真实单位、项目或个人数据。）
 
+## 🧪 回归测试
+V1.3.3 起附带 40 项 pytest 回归测试，锁定两处曾造成**静默写错数据**的缺陷：
+
+| 测试文件 | 覆盖内容 |
+|---|---|
+| `tests/test_rowkey_normalize.py` | 行标识归一化：并列连词「之 / 及」不得误截断；区段「之X段」与区间「A至B」的收敛能力不回潮 |
+| `tests/test_synonym_split.py` | 同义词分组：「项目负责人」与「项目经理」必须互斥，不得被互相匹配 |
+
+测试样本已做脱敏（真实项目名 / 路名替换为「示范路」「示例学校」等虚构名），
+但**语言结构保持原样**，因此断言依然有效。
+
+## 🏙 关于地区定制
+
+项目名的归一化需要剥掉「通用前后缀」—— 那些在当地几乎所有项目名里都会出现、
+因此**不能用来区分项目身份**的词（例如行政区划名、省市前缀）。
+这些词表集中在 `core/rowkey_matcher.py`：
+
+| 词表 | 作用 | 开源版内容 |
+|---|---|---|
+| `_FLEX_TOKENS` | 剥掉通用方位 / 片区词 | `城东 / 城西 / 城南 / 城北 / 中心区 / 示范区 / 开发区 / 新城区` |
+| `_GENERIC_PREFIXES` | 剥掉省市级通用前缀 | `示例市 / 示例县 / 示例省 / 示例新区 / 示` |
+
+**开源版把这两张表换成了语义等价的通用词**，因此：
+- 拿到手即可用于任何地区，不会残留原开发地的地理痕迹；
+- 若您的项目集中在某一地区，把这两张表换成当地的行政区划名与习惯前缀，效果会更好。
+
+> 为保护业务隐私，开源版中的**具体项目名称、路段名称与地区名称已全部替换为虚构名**
+> （如「示范城市之光」「示例学校」「示范路」）。替换只涉及注释、文档串与测试样本，
+> 不影响任何程序逻辑。
+
 ## 🤝 贡献
 欢迎提交 Issue 与 Pull Request。提交前请确保：
 - 不引入任何真实业务数据、单位名称或个人隐私
 - 新增同义词请在 `同义词词典.json` 中补充，并附 `reason` 说明
+- 修改 `core/matcher.py` 或 `core/rowkey_matcher.py` 后，`python -m pytest tests -q` 须全绿
 
 ## 📄 许可证
 本项目以 [Apache License 2.0](LICENSE) 开源。
