@@ -62,7 +62,7 @@ def build_exe():
         "--windowed",
         "--noconfirm",
         "--noupx",
-        "--name", "国企大表哥_V1.3.1",
+        "--name", "国企大表哥_V1.3.3",
         f"--distpath", output_dir,
         f"--workpath", work_dir,
         f"--specpath", project_root,
@@ -117,7 +117,7 @@ def build_exe():
 
         if result.returncode == 0:
             print("[成功] 打包完成！")
-            exe_name = "国企大表哥_V1.3.1.exe"
+            exe_name = "国企大表哥_V1.3.3.exe"
             exe_path = os.path.join(output_dir, exe_name)
             if os.path.exists(exe_path):
                 size = os.path.getsize(exe_path) / (1024 * 1024)
