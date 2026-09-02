@@ -163,7 +163,7 @@
   <div style="text-align:center;margin-bottom:24px">
     <img src="大表哥Logo.ico" style="height:56px;margin-bottom:12px" alt="国企大表哥">
     <div style="font-size:26px;font-weight:800">国企大表哥</div>
-    <div style="display:inline-block;background:var(--primary);color:#fff;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-top:8px">版本 V1.3.1</div>
+    <div style="display:inline-block;background:var(--primary);color:#fff;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-top:8px">版本 V1.3.3</div>
     <div style="color:var(--text-secondary);font-size:13px;margin-top:10px">guoqibigbro · 填表表哥</div>
   </div>
 
@@ -174,7 +174,7 @@
     </div>
     <div style="background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--border);text-align:center">
       <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">当前版本</div>
-      <div style="font-size:18px;font-weight:700">V1.3.1</div>
+      <div style="font-size:18px;font-weight:700">V1.3.3</div>
     </div>
     <div style="background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--border);text-align:center">
       <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">技术栈</div>
@@ -182,7 +182,7 @@
     </div>
     <div style="background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--border);text-align:center">
       <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">最新发布</div>
-      <div style="font-size:14px;font-weight:600">2026-08-06</div>
+      <div style="font-size:14px;font-weight:600">2026-09-02</div>
     </div>
   </div>
 
@@ -249,6 +249,12 @@
       📝 更新日志 <span id="changelog-toggle" style="font-size:12px;color:var(--text-secondary)">▸</span>
     </div>
       <div id="changelog-body" style="display:none;font-size:13px;color:var(--text-secondary);line-height:1.8">
+      <div style="margin-bottom:8px"><b>V1.3.3</b> <span style="font-size:11px;color:var(--primary-light)">2026-09-02</span></div>
+      <ul style="margin:0;padding-left:20px">
+        <li>重新打包发布：关于页版本号与「最新发布」日期现已正确显示 V1.3.3 / 2026-09-02（此前误留 V1.3.1 / 2026-08-06）</li>
+        <li>修复两处会静默写错数据的缺陷：归一化正则误删并列连词「之 / 及」；「项目负责人」与「项目经理」同组导致整列填错人</li>
+        <li>新增 40 项 pytest 回归测试，锁定上述行为防止回潮</li>
+      </ul>
       <div style="margin-bottom:8px"><b>V1.3.1</b> <span style="font-size:11px;color:var(--primary-light)">2026-08-06</span></div>
       <ul style="margin:0;padding-left:20px">
         <li>移除校核前端 UI，改为开发人员使用日志（UsageLog）</li>

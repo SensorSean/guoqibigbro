@@ -1719,4 +1719,4 @@ function closeDictModal() {
     if (o) o.classList.remove('show');
 }
 
-console.log('%c⚡ 国企大表哥 guoqi bigbro V1.3.1', 'font-size:20px;font-weight:900;color:#6C5CE7');
+console.log('%c⚡ 国企大表哥 guoqi bigbro V1.3.3', 'font-size:20px;font-weight:900;color:#6C5CE7');

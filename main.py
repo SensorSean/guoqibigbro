@@ -17,7 +17,7 @@ except ImportError as e:
     sys.exit(1)
 
 
-__version__ = "V1.3.1"
+__version__ = "V1.3.3"
 APP_NAME = "国企大表哥"
 APP_TAGLINE = "guoqibigbro · 填表表哥"
 AUTHOR = "LuoLei"
